@@ -20,6 +20,9 @@ room = "2.6.1"
 # Navigation
 navigation = "2.7.6"
 
+# Coroutines
+coroutines = "1.7.1"
+
 [libraries]
 
 # Detekt
@@ -41,6 +44,14 @@ ui-constraintLayout = "androidx.constraintlayout:constraintlayout:2.1.4"
 
 # Unit tests
 unitTests-junit = "junit:junit:4.13.2"
+unitTests-junit-jupiter = "org.junit.jupiter:junit-jupiter:5.8.1"
+
+# Coroutines tests
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+
+# Mockito
+mockito-core = "org.mockito:mockito-core:5.8.0"
+mockito-kotlin = "org.mockito.kotlin:mockito-kotlin:5.2.1"
 
 # UI tests
 uiTests-junitExt = "androidx.test.ext:junit:1.1.5"
@@ -64,7 +75,7 @@ navigation-ui = { module = "androidx.navigation:navigation-ui-ktx", version.ref 
 fragment = "androidx.fragment:fragment-ktx:1.6.2"
 
 # Coroutines
-coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
+coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 
 # Koin
 koin = "io.insert-koin:koin-android:3.5.3"

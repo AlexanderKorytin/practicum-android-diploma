@@ -51,6 +51,16 @@ dependencies {
 
     // region Unit tests
     testImplementation(libs.unitTests.junit)
+    testImplementation(libs.unitTests.junit.jupiter)
+    // endregion
+
+    // region coroutines tests
+    testImplementation(libs.coroutines.test)
+    // endregion
+
+    // region mockito framework
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
     // endregion
 
     // region UI tests
