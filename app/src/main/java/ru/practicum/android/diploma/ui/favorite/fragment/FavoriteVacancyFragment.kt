@@ -14,7 +14,7 @@ import ru.practicum.android.diploma.databinding.FragmentFavoriteVacancyBinding
 import ru.practicum.android.diploma.domain.models.vacancy.VacancyItem
 import ru.practicum.android.diploma.presentation.favorite.model.FavoriteScreenState
 import ru.practicum.android.diploma.presentation.favorite.viewmodel.FavoriteViewModel
-import ru.practicum.android.diploma.presentation.vacancy.VacancyAdapter
+import ru.practicum.android.diploma.presentation.vacancy.adapters.VacancyAdapter
 import ru.practicum.android.diploma.util.BindingFragment
 import ru.practicum.android.diploma.util.VACANCY_ID
 import ru.practicum.android.diploma.util.debounce
@@ -22,10 +22,12 @@ import ru.practicum.android.diploma.util.debounce
 class FavoriteVacancyFragment : BindingFragment<FragmentFavoriteVacancyBinding>() {
     private val viewModel by viewModel<FavoriteViewModel>()
 
-    private val vacancyAdapter = VacancyAdapter { vacancyItem ->
-        vacancyClickDebounce?.let { vacancyClickDebounce -> vacancyClickDebounce(vacancyItem) }
-    }
+    private val vacancyAdapter = VacancyAdapter(
+        { vacancyClickDebounce?.let { vacancyClickDebounce -> vacancyClickDebounce(it) } },
+        { vacancyLongClickClickDebounce?.let { vacancyLongClickClickDebounce -> vacancyLongClickClickDebounce(it) } }
+    )
     private var vacancyClickDebounce: ((VacancyItem) -> Unit)? = null
+    private var vacancyLongClickClickDebounce: ((VacancyItem) -> Unit)? = null
 
     override fun createBinding(
         inflater: LayoutInflater,
@@ -58,6 +60,13 @@ class FavoriteVacancyFragment : BindingFragment<FragmentFavoriteVacancyBinding>(
         ) { vacancyItem ->
             val vacancyBundle = bundleOf(VACANCY_ID to vacancyItem.id)
             findNavController().navigate(R.id.action_favoriteVacancyFragment_to_vacancyDetailsFragment, vacancyBundle)
+        }
+        vacancyLongClickClickDebounce = debounce(
+            CLICK_DEBOUNCE_DELAY_MILLIS,
+            viewLifecycleOwner.lifecycleScope,
+            false
+        ) { vacancyItem ->
+            viewModel.deleteVacancyFromFavorite(vacancyItem)
         }
     }
 

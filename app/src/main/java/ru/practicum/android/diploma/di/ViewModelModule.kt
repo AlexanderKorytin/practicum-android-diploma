@@ -13,11 +13,16 @@ import ru.practicum.android.diploma.presentation.vacancy.viewmodel.SearchViewMod
 
 val viewModelModule = module {
     viewModel {
-        SearchViewModel(vacanciesInteractor = get(), settingsInteractor = get())
+        SearchViewModel(
+            vacanciesInteractor = get(),
+            settingsInteractor = get(),
+            favoritesInteractor = get(),
+            detailsInteractor = get()
+        )
     }
 
     viewModel {
-        FavoriteViewModel(favoritesInteractor = get())
+        FavoriteViewModel(favoritesInteractor = get(), detailsInteractor = get())
     }
 
     viewModel<DetailsViewModel> {
