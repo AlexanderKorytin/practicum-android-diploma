@@ -69,6 +69,4 @@
     <string name="clear">Сбросить</string>
     <string name="region_not_found">Такого региона нет</string>
     <string name="empty_industry_list">Не удалось получить\nсписок отраслей</string>
-    <string name="not_saved_in_favorite">Не удалось добавить в избранное</string>
-    <string name="ok_saved_in_favorite">Вакансия добавлена и избранное</string>
 </resources>

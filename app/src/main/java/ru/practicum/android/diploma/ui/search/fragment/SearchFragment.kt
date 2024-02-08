@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
@@ -17,7 +16,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.databinding.FragmentSearchBinding
 import ru.practicum.android.diploma.domain.models.vacancy.VacancyItem
-import ru.practicum.android.diploma.presentation.vacancy.adapters.VacancyAdapter
+import ru.practicum.android.diploma.presentation.vacancy.VacancyAdapter
 import ru.practicum.android.diploma.presentation.vacancy.models.PageLoadingState
 import ru.practicum.android.diploma.presentation.vacancy.models.ScreenStateVacancies
 import ru.practicum.android.diploma.presentation.vacancy.viewmodel.SearchViewModel
@@ -28,12 +27,10 @@ import ru.practicum.android.diploma.util.debounce
 class SearchFragment : BindingFragment<FragmentSearchBinding>() {
 
     private val viewModel by viewModel<SearchViewModel>()
-    private val vacancyAdapter = VacancyAdapter(
-        { vacancyClickDebounce?.let { vacancyClickDebounce -> vacancyClickDebounce(it) } },
-        { vacancyLongClickClickDebounce?.let { vacancyLongClickClickDebounce -> vacancyLongClickClickDebounce(it) } }
-    )
+    private val vacancyAdapter = VacancyAdapter { vacancyItem ->
+        vacancyClickDebounce?.let { vacancyClickDebounce -> vacancyClickDebounce(vacancyItem) }
+    }
     private var vacancyClickDebounce: ((VacancyItem) -> Unit)? = null
-    private var vacancyLongClickClickDebounce: ((VacancyItem) -> Unit)? = null
     private var currentItemsFound = ZERO_ITEMS
 
     override fun createBinding(
@@ -61,9 +58,6 @@ class SearchFragment : BindingFragment<FragmentSearchBinding>() {
         }
         viewModel.isSettingsNotEmpty.observe(viewLifecycleOwner) {
             binding.btnFilter.setImageResource(if (it) R.drawable.ic_filter_on else R.drawable.ic_filter_off)
-        }
-        viewModel.showToastFavorite.observe(viewLifecycleOwner) {
-            Toast.makeText(requireContext(), resources.getString(it), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -117,49 +111,25 @@ class SearchFragment : BindingFragment<FragmentSearchBinding>() {
             val vacancyBundle = bundleOf(VACANCY_ID to vacancyItem.id)
             findNavController().navigate(R.id.action_searchFragment_to_vacancyDetailsFragment, vacancyBundle)
         }
-        vacancyLongClickClickDebounce = debounce(
-            CLICK_DEBOUNCE_DELAY_MILLIS,
-            viewLifecycleOwner.lifecycleScope,
-            false
-        ) { vacancyItem ->
-            viewModel.setSettingsBase()
-            viewModel.saveVacancyInFavorite(vacancyItem)
-        }
     }
 
     private fun render(state: ScreenStateVacancies) {
         when (state) {
-            is ScreenStateVacancies.Content -> {
-                showContent(state.listVacancies, state.foundItems)
-            }
+            is ScreenStateVacancies.Content -> { showContent(state.listVacancies, state.foundItems) }
 
-            is ScreenStateVacancies.Empty -> {
-                showEmptyState(state.message)
-            }
+            is ScreenStateVacancies.Empty -> { showEmptyState(state.message) }
 
-            is ScreenStateVacancies.Error -> {
-                showServerErrorState(state.message)
-            }
+            is ScreenStateVacancies.Error -> { showServerErrorState(state.message) }
 
-            is ScreenStateVacancies.IsLoading -> {
-                showLoadingState()
-            }
+            is ScreenStateVacancies.IsLoading -> { showLoadingState() }
 
-            is ScreenStateVacancies.NoInternet -> {
-                showNoInternetState(state.message)
-            }
+            is ScreenStateVacancies.NoInternet -> { showNoInternetState(state.message) }
 
-            is ScreenStateVacancies.NextPageIsLoading -> {
-                showNextPageLoading()
-            }
+            is ScreenStateVacancies.NextPageIsLoading -> { showNextPageLoading() }
 
-            is ScreenStateVacancies.NextPageIsLoaded -> {
-                showNextPageLoaded(state.listVacancies)
-            }
+            is ScreenStateVacancies.NextPageIsLoaded -> { showNextPageLoaded(state.listVacancies) }
 
-            ScreenStateVacancies.NextPageLoadingError -> {
-                showNextPageLoadingError()
-            }
+            ScreenStateVacancies.NextPageLoadingError -> { showNextPageLoadingError() }
         }
     }
 

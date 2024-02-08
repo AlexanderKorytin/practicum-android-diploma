@@ -8,18 +8,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.data.models.EMPTY_PARAM_NUM
 import ru.practicum.android.diploma.data.models.EMPTY_PARAM_SRT
 import ru.practicum.android.diploma.data.models.ValuesSearchId
-import ru.practicum.android.diploma.domain.api.DetailsInteractor
-import ru.practicum.android.diploma.domain.api.FavoritesInteractor
 import ru.practicum.android.diploma.domain.api.VacanciesInteractor
 import ru.practicum.android.diploma.domain.api.settings.SettingsInteractor
 import ru.practicum.android.diploma.domain.models.SearchResultData
 import ru.practicum.android.diploma.domain.models.settings.SearchSettings
 import ru.practicum.android.diploma.domain.models.vacancy.Vacancies
-import ru.practicum.android.diploma.domain.models.vacancy.VacancyItem
 import ru.practicum.android.diploma.presentation.vacancy.models.PageLoadingState
 import ru.practicum.android.diploma.presentation.vacancy.models.ScreenStateVacancies
 import ru.practicum.android.diploma.presentation.vacancy.models.SingleLiveEvent
@@ -28,9 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class SearchViewModel(
     private val vacanciesInteractor: VacanciesInteractor,
-    private val settingsInteractor: SettingsInteractor,
-    private val favoritesInteractor: FavoritesInteractor,
-    private val detailsInteractor: DetailsInteractor
+    private val settingsInteractor: SettingsInteractor
 ) : ViewModel() {
 
     init {
@@ -39,13 +33,11 @@ class SearchViewModel(
 
     private val _screenState: MutableLiveData<ScreenStateVacancies> = MutableLiveData()
     private val _showToastState = SingleLiveEvent<PageLoadingState>()
-    private val _showToastFavorite = SingleLiveEvent<Int>()
     private var _isSettingsNotEmpty: MutableLiveData<Boolean> = MutableLiveData()
     val isSettingsNotEmpty: LiveData<Boolean> = _isSettingsNotEmpty
     private var searchJob: Job? = null
     val screenState: LiveData<ScreenStateVacancies> = _screenState
     val toastState: LiveData<PageLoadingState> = _showToastState
-    val showToastFavorite: LiveData<Int> = _showToastFavorite
     private var currentPage = AtomicInteger(FIRST_PAGE)
     private var isNextPageLoading = AtomicBoolean(false)
     private var currentQuery = EMPTY_QUERY
@@ -60,27 +52,6 @@ class SearchViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             vacanciesInteractor.getVacancies(query, pageNum).collect { result ->
                 processingResult(result)
-            }
-        }
-    }
-
-    fun saveVacancyInFavorite(vacancy: VacancyItem) {
-        viewModelScope.launch {
-            detailsInteractor.getVacancyDetails(vacancy.id).collect {
-                when (it) {
-                    is SearchResultData.Data -> {
-                        if (it.value != null) {
-                            favoritesInteractor.addVacancyToFavorite(vacancyDetails = it.value)
-                            _showToastFavorite.postValue(R.string.ok_saved_in_favorite)
-                        } else {
-                            _showToastFavorite.postValue(R.string.not_saved_in_favorite)
-                        }
-                    }
-
-                    else -> {
-                        _showToastFavorite.postValue(R.string.not_saved_in_favorite)
-                    }
-                }
             }
         }
     }

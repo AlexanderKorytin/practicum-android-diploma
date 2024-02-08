@@ -1,4 +1,4 @@
-package ru.practicum.android.diploma.presentation.vacancy.viewholders
+package ru.practicum.android.diploma.presentation.vacancy
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
