@@ -2,11 +2,14 @@ package ru.practicum.android.diploma.data.network.vacancies
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.Assertions
 import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.reset
 import org.mockito.junit.MockitoJUnitRunner
 import ru.practicum.android.diploma.data.dto.DetailsRequest
 import ru.practicum.android.diploma.data.dto.responses.vacancy.Area
@@ -17,13 +20,28 @@ import ru.practicum.android.diploma.data.dto.responses.vacancy.details.ResponseD
 import ru.practicum.android.diploma.data.dto.responses.vacancy.details.mapToVacancyDetails
 import ru.practicum.android.diploma.data.network.RetrofitNetworkClient
 import ru.practicum.android.diploma.domain.models.SearchResultData
+import java.net.ConnectException
+import java.net.SocketTimeoutException
 
 @RunWith(MockitoJUnitRunner::class)
 class RepositoryDetailsImplTest {
 
+    private lateinit var testNetworkClient: RetrofitNetworkClient
+    private lateinit var testDetailsRepository: RepositoryDetailsImpl
+
+    @Before
+    fun setUp() {
+        testNetworkClient = mock()
+        testDetailsRepository = RepositoryDetailsImpl(testNetworkClient)
+    }
+
+    @After
+    fun tearDown() {
+        reset(testNetworkClient)
+    }
+
     @Test
     fun `should return same vacancyDetails`() = runTest {
-        val testNetworkClient = mock<RetrofitNetworkClient>()
         val testVacancyDetailDto = ResponseDetailsDto(
             id = "42",
             name = "test",
@@ -48,10 +66,31 @@ class RepositoryDetailsImplTest {
         )
         Mockito.`when`(testNetworkClient.getCurrentVacancy(DetailsRequest("42")))
             .thenReturn(Result.success(testVacancyDetailDto))
-        val repositoryDetails = RepositoryDetailsImpl(testNetworkClient)
 
         val expected = testVacancyDetailDto.mapToVacancyDetails()
-        val actual = (repositoryDetails.getVacancyDetails("42").first() as SearchResultData.Data).value
+        val actual = (testDetailsRepository.getVacancyDetails("42").first() as SearchResultData.Data).value
+
+        Assertions.assertEquals(actual, expected)
+    }
+
+    @Test
+    fun `should return internet error state`() = runTest {
+        Mockito.`when`(testNetworkClient.getCurrentVacancy(request = DetailsRequest("42"))).thenReturn(
+            Result.failure(ConnectException())
+        )
+        val expected = SearchResultData.NoInternet<Any>(2131886278)
+        val actual = testDetailsRepository.getVacancyDetails("42").first()
+
+        Assertions.assertEquals(actual, expected)
+    }
+
+    @Test
+    fun `should return internet error state timeout`() = runTest {
+        Mockito.`when`(testNetworkClient.getCurrentVacancy(request = DetailsRequest("42"))).thenReturn(
+            Result.failure(SocketTimeoutException())
+        )
+        val expected = SearchResultData.NoInternet<Any>(2131886278)
+        val actual = testDetailsRepository.getVacancyDetails("42").first()
 
         Assertions.assertEquals(actual, expected)
     }
