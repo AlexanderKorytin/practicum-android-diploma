@@ -11,6 +11,24 @@ env:
     reviewdogSetup: -f=checkstyle -name="detekt" -level=error -filter-mode=added
 
 jobs:
+    unit-tests:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v3
+
+            -   name: Set up JDK 11
+                uses: actions/setup-java@v3.13.0
+                with:
+                    distribution: 'adopt'
+                    java-version: '17'
+
+            -   name: Grant execute permission for gradlew
+                run: chmod +x gradlew
+
+            -   name: Run Tests with Gradle
+                run: ./gradlew test
+
     pr-checks:
         runs-on: ubuntu-latest
         steps:
