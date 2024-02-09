@@ -23,7 +23,6 @@ class RepositoryDetailsImplTest {
 
     @Test
     fun `should return same vacancyDetails`() = runTest {
-
         val testNetworkClient = mock<RetrofitNetworkClient>()
         val testVacancyDetailDto = ResponseDetailsDto(
             id = "42",
